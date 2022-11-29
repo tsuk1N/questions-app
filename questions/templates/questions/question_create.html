@@ -1,0 +1,27 @@
+{% extends 'questions/base.html' %}
+
+{% block title %}<title>Qan'A - Index</title>{% endblock title %}
+
+{% block content %}
+
+<div class="container">
+        <div class="py-1">
+            <div class="question-border">
+                <h4>Make your Question</h4>
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <div class="comment-form">
+                        {% for field in form %}
+                            {% if field.errors %}
+                                <div class="errorlist">{{ field.errors }}</div>
+                            {% endif %}
+                            {{ field }}
+                        {% endfor %}    
+                    </div>
+                    <button type="submit" class="btn btn-primary my-2">Submit question</button>
+                </form>
+            </div>
+        </div>
+</div>
+
+{% endblock content %}

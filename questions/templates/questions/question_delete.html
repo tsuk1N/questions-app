@@ -1,0 +1,25 @@
+{% extends 'questions/base.html' %}
+
+{% block title %}<title>Qan'A - Index</title>{% endblock title %}
+
+{% block content %}
+
+<div class="container">
+        <div class="py-1">
+            <div class="question-border">
+                <h4>Delete your Question</h4>
+                <div class="center-error-message my-3">
+                    &middot; Are you sure you want to DELETE this question ? &middot;
+                </div>
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <div class="">
+                        {{ question }}    
+                    </div>
+                    <button type="submit" class="btn btn-primary my-4">Delete question</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

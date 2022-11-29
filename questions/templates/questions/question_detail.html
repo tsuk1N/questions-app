@@ -1,0 +1,53 @@
+{% extends 'questions/base.html' %}
+
+{% block title %}<title>Qan'A - {{ question }}</title>{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <div class="py-1">
+        <div class="question-border">
+            <div class="question-inside-border">
+                <p>{{ question.author }}</p>
+                <h2>{{ question }}</h2>
+                <div class="date-inside-border">
+                    <p>{{ question.pub_date|date:"d/M/Y - H:i"  }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="question-border">
+        <h4>Answers</h4>
+        <form action="" method="post">
+            {% csrf_token %}
+            <div class="comment-form">
+                {% for field in form %}
+                    {% if field.errors %}
+                        <div class="errorlist">{{ field.errors }}</div>
+                    {% endif %}
+                    {{ field }}
+                {% endfor %}
+                
+            </div>
+            <button type="submit" class="btn btn-primary my-2">Submit answer</button>
+        </form>
+        <div class="question-inside-border">
+            {% if question.comment.all %}
+                {% for comment in question.comment.all %}
+                    <div class="question-inside-border">
+                        <div class="author-text-color">
+                            {{ comment.author }} &middot;
+                            <div class="text-muted author-text-color">
+                                {{ comment.pub_date|date:"d/M/Y - H:i" }}    
+                            </div>
+                        </div>
+                        <h6>{{ comment.comment_text }}</h6>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Be the first one to write an answer!</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}
+

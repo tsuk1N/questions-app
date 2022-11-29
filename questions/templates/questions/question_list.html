@@ -1,0 +1,33 @@
+{% extends 'questions/base.html' %}
+
+{% block title %}<title>Qan'A - Index</title>{% endblock title %}
+
+{% block content %}
+
+<div class="container">
+    {% for message in messages %}
+        {% if message.tags %}
+            <div class="message-success">
+                {{ message }}
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    {% if question_list %}
+        {% for question in question_list %}
+        <div class="py-1">
+            <div class="question-border">
+                <p>{{ question.author }}</p> 
+                <a href="{% url 'questions:detail' question.pk %}"><h2>{{ question.question_text }}</h2></a>
+                <p>{{ question.pub_date|date:"d/M/Y - H:i" }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="question-border">
+            <h4>No questions to show</h4>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock content %}
