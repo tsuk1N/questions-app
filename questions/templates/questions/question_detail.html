@@ -17,6 +17,7 @@
     </div>
     <div class="question-border">
         <h4>Answers</h4>
+        {% if request.user.is_authenticated %}
         <form action="" method="post">
             {% csrf_token %}
             <div class="comment-form">
@@ -30,22 +31,25 @@
             </div>
             <button type="submit" class="btn btn-primary my-2">Submit answer</button>
         </form>
+        {% else %}
+            <h4><a href="">You must login to write an answer.</a></h4>
+        {% endif %}
         <div class="question-inside-border">
-            {% if question.comment.all %}
-                {% for comment in question.comment.all %}
-                    <div class="question-inside-border">
-                        <div class="author-text-color">
-                            {{ comment.author }} &middot;
-                            <div class="text-muted author-text-color">
-                                {{ comment.pub_date|date:"d/M/Y - H:i" }}    
+                {% if question.comment.all %}
+                    {% for comment in question.comment.all %}
+                        <div class="question-inside-border">
+                            <div class="author-text-color">
+                                {{ comment.author }} &middot;
+                                <div class="text-muted author-text-color">
+                                    {{ comment.pub_date|date:"d/M/Y - H:i" }}    
+                                </div>
                             </div>
+                            <h6>{{ comment.comment_text }}</h6>
                         </div>
-                        <h6>{{ comment.comment_text }}</h6>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>Be the first one to write an answer!</p>
-            {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <p>Be the first one to write an answer!</p>
+                {% endif %}
         </div>
     </div>
 </div>

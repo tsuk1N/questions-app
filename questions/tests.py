@@ -12,11 +12,11 @@ from questions.views import (
 # Create your tests here.
 
 
-def create_question(question_text="Question number 1"):
+def create_question(question_text="Question number 1", is_published=False):
     author = User.objects.create_user(
         username="username", password="password")
     question = Question.objects.create(
-        author=author, question_text=question_text)
+        author=author, question_text=question_text, is_published=is_published)
 
     return question
 
@@ -83,15 +83,20 @@ class QuestionsIndexViewTest(TestCase):
         self.assertQuerysetEqual(response.context["question_list"], [])
 
     def test_index_has_a_question(self):
-        question = create_question(question_text="Question 1")
+        question = create_question(is_published=True)
+        self.client.login(username="username", password="password")
         response = self.client.get(reverse("questions:list"))
         self.assertQuerysetEqual(response.context["question_list"], [question])
 
     def test_index_has_more_than_1_question(self):
         author = User.objects.create_user(
             username="username1", password="password")
-        q1 = Question.objects.create(question_text="Question 1", author=author)
-        q2 = create_question(question_text="Question 2")
+        q1 = Question.objects.create(
+            question_text="Question number 1", author=author,
+            is_published=True)
+        q2 = Question.objects.create(
+            question_text="Question number 2", author=author,
+            is_published=True)
 
         response = self.client.get(reverse("questions:list"))
         self.assertIn(str(q1), response.content.decode("utf-8"))
@@ -133,6 +138,14 @@ class QuestionDetailViewTests(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 404)
+
+    def test_question_detail_template_shows_login_message(self):
+        response = self.client.get(
+            reverse("questions:detail", kwargs={"pk": 1}))
+        self.assertIn('You must login to write an answer.',
+                      response.content.decode("utf-8"))
+        self.assertContains(
+            response, 'You must login to write an answer.')
 
     def test_question_detail_comment_form_valid_and_success_url(self):
         self.client.login(username="username", password="password")
@@ -192,11 +205,13 @@ class QuestionCreateViewTests(TestCase):
         return super().setUp()
 
     def test_question_create_is_using_correct_template(self):
+        self.client.login(username="username", password="password")
         response = self.client.get(
             reverse("questions:create"))
         self.assertTemplateUsed(response, "questions/question_create.html")
 
     def test_question_create_200_status(self):
+        self.client.login(username="username", password="password")
         response = self.client.get(
             reverse("questions:create"))
         self.assertEqual(response.status_code, 200)
@@ -244,6 +259,13 @@ class QuestionCreateViewTests(TestCase):
         self.assertIn("questiontext1234", response.content.decode("utf-8"))
         self.assertContains(response, "questiontext1234")
 
+    def test_question_create_template_shows_login_message(self):
+        response = self.client.get(reverse("questions:create"))
+        self.assertIn('You must login to make your question.',
+                      response.content.decode("utf-8"))
+        self.assertContains(
+            response, 'You must login to make your question.')
+
 
 class QuestionUpdateViewTests(TestCase):
     def setUp(self):
@@ -251,11 +273,13 @@ class QuestionUpdateViewTests(TestCase):
         return super().setUp()
 
     def test_question_update_is_using_correct_template(self):
+        self.client.login(username="username", password="password")
         response = self.client.get(
             reverse("questions:update", kwargs={"pk": 1}))
         self.assertTemplateUsed(response, "questions/question_update.html")
 
     def test_question_update_200_status(self):
+        self.client.login(username="username", password="password")
         response = self.client.get(
             reverse("questions:update", kwargs={"pk": 1}))
         self.assertEqual(response.status_code, 200)
@@ -304,6 +328,7 @@ class QuestionUpdateViewTests(TestCase):
         self.assertContains(response, "questiontext1234")
 
     def test_question_update_view_returns_404_if_no_question_is_found(self):
+        self.client.login(username="username", password="password")
         url = reverse("questions:update", kwargs={"pk": 1000})
         response = self.client.get(url)
 
@@ -316,11 +341,13 @@ class QuestionDeleteViewTests(TestCase):
         return super().setUp()
 
     def test_question_delete_is_using_correct_template(self):
+        self.client.login(username="username", password="password")
         response = self.client.get(
             reverse("questions:delete", kwargs={"pk": 1}))
         self.assertTemplateUsed(response, "questions/question_delete.html")
 
     def test_question_delete_200_status(self):
+        self.client.login(username="username", password="password")
         response = self.client.get(
             reverse("questions:delete", kwargs={"pk": 1}))
         self.assertEqual(response.status_code, 200)
@@ -344,13 +371,75 @@ class QuestionDeleteViewTests(TestCase):
                       response.content.decode("utf-8"))
 
     def test_question_delete_view_returns_404_if_no_question_is_found(self):
+        self.client.login(username="username", password="password")
         url = reverse("questions:delete", kwargs={"pk": 1000})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 404)
 
     def test_question_delete_is_showing_correct_question(self):
+        self.client.login(username="username", password="password")
         response = self.client.get(
             reverse("questions:delete", kwargs={"pk": 1}))
         self.assertEqual(
             response.context["question"].question_text, "Question number 1")
+
+
+class AuthorQuestionListViewTests(TestCase):
+    def test_author_question_list_is_using_correct_template(self):
+        self.client.login(username="username", password="password")
+        response = self.client.get(
+            reverse("questions:author-questions"))
+        self.assertTemplateUsed(
+            response, "questions/author_question_list.html")
+
+    def test_author_question_list_200_status(self):
+        self.client.login(username="username", password="password")
+        response = self.client.get(
+            reverse("questions:author-questions"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_author_question_list_has_no_questions(self):
+        User.objects.create_user(username="username", password="password")
+        self.client.login(username="username", password="password")
+        response = self.client.get(reverse("questions:author-questions"))
+        self.assertIn(
+            "No questions to show", response.content.decode("utf-8"))
+        self.assertQuerysetEqual(response.context["question_list"], [])
+
+    def test_author_question_list_has_a_question(self):
+        question = create_question()
+        self.client.login(username="username", password="password")
+        response = self.client.get(reverse("questions:author-questions"))
+        self.assertQuerysetEqual(response.context["question_list"], [question])
+
+    def test_author_question_list_has_more_than_1_question(self):
+        author = User.objects.create_user(
+            username="username1", password="password")
+        self.client.login(username="username1", password="password")
+        q1 = Question.objects.create(
+            question_text="Question number 1", author=author)
+        q2 = Question.objects.create(
+            question_text="Question number 2", author=author)
+
+        response = self.client.get(reverse("questions:author-questions"))
+        self.assertIn(str(q1), response.content.decode("utf-8"))
+        self.assertIn(str(q2), response.content.decode("utf-8"))
+
+    def test_author_question_list_template_shows_login_message(self):
+        response = self.client.get(reverse("questions:author-questions"))
+        self.assertIn('You need to login first to see your questions.',
+                      response.content.decode("utf-8"))
+        self.assertContains(
+            response, 'You need to login first to see your questions.')
+
+    def test_author_question_list_template_shows_message_if_no_questions(self):
+        User.objects.create_user(username="username", password="password")
+        self.client.login(username="username", password="password")
+        response = self.client.get(reverse("questions:author-questions"))
+        self.assertContains(response, "No questions to show")
+        self.assertIn("No questions to show", response.content.decode("utf-8"))
+
+    def test_author_question_list_dont_show_published_questions(self):
+        pass
+    # TODO faltou essa

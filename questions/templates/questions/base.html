@@ -24,7 +24,7 @@
         <a class="nav-link " href="{% url 'questions:create' %}">Make a Question</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="request.user.question.all">Your questions</a>
+        <a class="nav-link" href="{% url 'questions:author-questions' %}">Your questions</a>
       </li>
       <li class="nav-item">
         {% if request.user.is_authenticated %}

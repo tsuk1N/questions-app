@@ -5,6 +5,7 @@
 {% block content %}
 
 <div class="container">
+    {% if request.user.is_authenticated %}
         <div class="py-1">
             <div class="question-border">
                 <h4>Make your Question</h4>
@@ -22,6 +23,9 @@
                 </form>
             </div>
         </div>
+    {% else %}
+        <h4><a href="">You must login to make your question.</a></h4>
+    {% endif %}
 </div>
 
 {% endblock content %}

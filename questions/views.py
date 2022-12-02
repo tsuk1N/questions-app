@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.views.generic import (
     CreateView, DetailView, ListView, UpdateView, DeleteView,
 )
@@ -5,8 +6,9 @@ from django.views.generic.edit import FormMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib.auth.models import User
 
-from .models import Comment, Question
+from .models import Question
 from . forms import CommentForm, QuestionForm
 
 # Create your views here.
@@ -16,6 +18,11 @@ class QuestionListView(ListView):
     model = Question
     context_object_name = "question_list"
     template_name = "questions/question_list.html"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = Question.objects.filter(is_published=True)
+        return qs
 
 
 class QuestionDetailView(DetailView, FormMixin):
@@ -62,7 +69,7 @@ class QuestionCreateView(CreateView):
         return reverse_lazy("questions:detail", kwargs={"pk": self.object.pk})
 
 
-class QuestionUpdateView(UpdateView):
+class QuestionUpdateView(LoginRequiredMixin, UpdateView):
     model = Question
     template_name = "questions/question_update.html"
     context_object_name = "question"
@@ -79,7 +86,7 @@ class QuestionUpdateView(UpdateView):
         return reverse_lazy("questions:detail", kwargs={"pk": self.object.pk})
 
 
-class QuestionDeleteView(SuccessMessageMixin, DeleteView):
+class QuestionDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     model = Question
     template_name = "questions/question_delete.html"
     context_object_name = "question"
@@ -90,7 +97,16 @@ class QuestionDeleteView(SuccessMessageMixin, DeleteView):
 
 
 class AuthorQuestionListView(ListView):
-    pass
+    model = Question
+    context_object_name = "question_list"
+    template_name = "questions/author_question_list.html"
 
-# TODO colocar botão no detail para editar question
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = Question.objects.filter(
+            author=self.request.user.id, is_published=False)
+        return qs
+
+
 # TODO fazer paginação
+# TODO criar CBVs para login e register user

@@ -1,10 +1,13 @@
 from django.urls import path
 
-from . views import QuestionCreateView, QuestionDeleteView, QuestionDetailView, QuestionListView, QuestionUpdateView
+from . views import (AuthorQuestionListView, QuestionCreateView, QuestionDeleteView,
+                     QuestionDetailView, QuestionListView, QuestionUpdateView)
 
 app_name = "questions"
 
 urlpatterns = [
+    path("question/your-questions/", AuthorQuestionListView.as_view(),
+         name="author-questions"),
     path("question/<int:pk>/detail/", QuestionDetailView.as_view(),
          name="detail"),
     path("question/<int:pk>/update/", QuestionUpdateView.as_view(),
