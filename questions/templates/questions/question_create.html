@@ -1,6 +1,6 @@
 {% extends 'questions/base.html' %}
 
-{% block title %}<title>Qan'A - Index</title>{% endblock title %}
+{% block title %}<title>Qan'A - Make your Question</title>{% endblock title %}
 
 {% block content %}
 
@@ -24,7 +24,8 @@
             </div>
         </div>
     {% else %}
-        <h4><a href="">You must login to make your question.</a></h4>
+        <h4><a href="{% url 'authors:login' %}">You need to login first to make your question.</a></h4>
+        <h4><a href="{% url 'authors:register' %}">Or register if you don't have an account.</a></h4>
     {% endif %}
 </div>
 
