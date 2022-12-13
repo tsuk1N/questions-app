@@ -12,9 +12,10 @@ from questions.views import (
 # Create your tests here.
 
 
-def create_question(question_text="Question number 1", is_published=False):
+def create_question(question_text="Question number 1", is_published=False,
+                    username="username"):
     author = User.objects.create_user(
-        username="username", password="password")
+        username=username, password="password")
     question = Question.objects.create(
         author=author, question_text=question_text, is_published=is_published)
 
@@ -108,13 +109,16 @@ class QuestionsIndexViewTest(TestCase):
         self.assertIn("No questions to show", response.content.decode("utf-8"))
 
     def test_index_template_dont_show_questions_not_published(self):
-        pass
-    # TODO faltou essa
+        create_question()
+        response = self.client.get(reverse("questions:list"))
+
+        self.assertIn("No questions to show", response.content.decode("utf-8"))
+        self.assertContains(response, "No questions to show")
 
 
 class QuestionDetailViewTests(TestCase):
     def setUp(self):
-        self.q = create_question()
+        create_question(is_published=True)
         return super().setUp()
 
     def test_question_detail_is_using_correct_template(self):
@@ -139,7 +143,7 @@ class QuestionDetailViewTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
-    def test_question_detail_template_shows_login_message(self):
+    def test_question_detail_template_shows_login_message_to_comment(self):
         response = self.client.get(
             reverse("questions:detail", kwargs={"pk": 1}))
         self.assertIn('You must login to write an answer.',
@@ -198,6 +202,15 @@ class QuestionDetailViewTests(TestCase):
                       response.content.decode("utf-8"))
         self.assertContains(response, "Be the first one to write an answer!")
 
+    def test_question_detail_question_not_found_message_if_not_published(self):
+        create_question(is_published=False, username="username1")
+
+        response = self.client.get(
+            reverse("questions:detail", kwargs={"pk": 2}))
+
+        self.assertContains(response, "Question not found")
+        self.assertIn("Question not found", response.content.decode("utf-8"))
+
 
 class QuestionCreateViewTests(TestCase):
     def setUp(self):
@@ -231,7 +244,7 @@ class QuestionCreateViewTests(TestCase):
         view = QuestionCreateView()
         url2 = reverse("questions:create")
         view.get_success_url = url2
-        url1 = reverse("questions:detail", kwargs={"pk": 2})
+        url1 = reverse("questions:author-questions")
         response = self.client.post(
             view.get_success_url,
             data={"question_text": "what's is what is ?"})
@@ -251,7 +264,7 @@ class QuestionCreateViewTests(TestCase):
     def test_question_create_is_posted(self):
         self.client.login(username="username", password="password")
         url1 = reverse("questions:create")
-        url2 = reverse("questions:detail", kwargs={"pk": 2})
+        url2 = reverse("questions:author-questions")
         response = self.client.post(
             url1, data={"question_text": "questiontext1234"}, follow=True)
 
@@ -261,10 +274,10 @@ class QuestionCreateViewTests(TestCase):
 
     def test_question_create_template_shows_login_message(self):
         response = self.client.get(reverse("questions:create"))
-        self.assertIn('You must login to make your question.',
+        self.assertIn('You need to login first to make your question.',
                       response.content.decode("utf-8"))
         self.assertContains(
-            response, 'You must login to make your question.')
+            response, 'You need to login first to make your question.')
 
 
 class QuestionUpdateViewTests(TestCase):
@@ -316,10 +329,11 @@ class QuestionUpdateViewTests(TestCase):
                       response.content.decode("utf-8"))
         self.assertContains(response, "This field is required.")
 
-    def test_question_update_is_updated_and_posted(self):
+    def test_question_is_updated_and_posted(self):
+        create_question(is_published=True, username="username1")
         self.client.login(username="username", password="password")
-        url1 = reverse("questions:update", kwargs={"pk": 1})
-        url2 = reverse("questions:detail", kwargs={"pk": 1})
+        url1 = reverse("questions:update", kwargs={"pk": 2})
+        url2 = reverse("questions:detail", kwargs={"pk": 2})
         response = self.client.post(
             url1, data={"question_text": "questiontext1234"}, follow=True)
 
@@ -441,5 +455,9 @@ class AuthorQuestionListViewTests(TestCase):
         self.assertIn("No questions to show", response.content.decode("utf-8"))
 
     def test_author_question_list_dont_show_published_questions(self):
-        pass
-    # TODO faltou essa
+        create_question(is_published=True)
+        self.client.login(username="username", password="password")
+        response = self.client.get(reverse("questions:author-questions"))
+
+        self.assertIn("No questions to show", response.content.decode("utf-8"))
+        self.assertContains(response, "No questions to show")
