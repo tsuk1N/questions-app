@@ -12,22 +12,33 @@
             </div>
         {% endif %}
     {% endfor %}
+    
+    {% if request.user.is_authenticated %}
+        <h4>Welcome, {{ request.user }}</h4>
+    {% endif %}
 
     {% if question_list %}
         {% for question in question_list %}
         <div class="py-1">
             <div class="question-border">
-                <p>{{ question.author }}</p> 
+                {% if question.author == None %}
+                    <div class="deleted-user">Deleted User</div>
+                {% else %}
+                    <p>{{ question.author }}</p> 
+                {% endif %}
                 <a href="{% url 'questions:detail' question.pk %}"><h2>{{ question.question_text }}</h2></a>
                 <p>{{ question.pub_date|date:"d/M/Y - H:i" }}</p>
             </div>
         </div>
         {% endfor %}
+        {% include "questions/pagination.html" %}
     {% else %}
         <div class="question-border">
             <h4>No questions to show</h4>
         </div>
     {% endif %}
+
+
 </div>
 
 {% endblock content %}
