@@ -1,4 +1,3 @@
-from django.http import HttpResponse
 from django.views.generic import (
     CreateView, DetailView, ListView, UpdateView, DeleteView,
 )
@@ -6,7 +5,6 @@ from django.views.generic.edit import FormMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
-from django.contrib.auth.models import User
 
 from .models import Question
 from . forms import CommentForm, QuestionForm
@@ -18,6 +16,7 @@ class QuestionListView(ListView):
     model = Question
     context_object_name = "question_list"
     template_name = "questions/question_list.html"
+    paginate_by = 5
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -66,7 +65,7 @@ class QuestionCreateView(CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy("questions:detail", kwargs={"pk": self.object.pk})
+        return reverse_lazy("questions:author-questions")
 
 
 class QuestionUpdateView(LoginRequiredMixin, UpdateView):
@@ -100,13 +99,10 @@ class AuthorQuestionListView(ListView):
     model = Question
     context_object_name = "question_list"
     template_name = "questions/author_question_list.html"
+    paginate_by = 5
 
     def get_queryset(self):
         qs = super().get_queryset()
         qs = Question.objects.filter(
             author=self.request.user.id, is_published=False)
         return qs
-
-
-# TODO fazer paginação
-# TODO criar CBVs para login e register user
