@@ -1,13 +1,26 @@
 {% extends 'questions/base.html' %}
 
-{% block title %}<title>Qan'A - {{ question }}</title>{% endblock title %}
+{% block title %}
+    {% if question.is_published == False %}
+        <title>Question not found</title>
+    {% else %}
+        <title>Qan'A - {{ question }}</title>
+    {% endif %}
+{% endblock title %}
 
 {% block content %}
 <div class="container">
+    {% if question.is_published == False %}
+        <h4>Question not found</h4>
+    {% else %}
     <div class="py-1">
         <div class="question-border">
             <div class="question-inside-border">
-                <p>{{ question.author }}</p>
+            {% if question.author == None %}
+                <div class="deleted-user">Deleted User</div>
+            {% else %}
+                <p>{{ question.author }}</p> 
+            {% endif %}
                 <h2>{{ question }}</h2>
                 <div class="date-inside-border">
                     <p>{{ question.pub_date|date:"d/M/Y - H:i"  }}</p>
@@ -18,28 +31,36 @@
     <div class="question-border">
         <h4>Answers</h4>
         {% if request.user.is_authenticated %}
-        <form action="" method="post">
-            {% csrf_token %}
-            <div class="comment-form">
-                {% for field in form %}
-                    {% if field.errors %}
-                        <div class="errorlist">{{ field.errors }}</div>
-                    {% endif %}
-                    {{ field }}
-                {% endfor %}
-                
-            </div>
-            <button type="submit" class="btn btn-primary my-2">Submit answer</button>
-        </form>
+            {% if question.is_published == False %}
+                <h4>It's not possible to answer a question not published.</h4>
+            {% else %}
+            <form action="" method="post">
+                {% csrf_token %}
+                <div class="comment-form">
+                    {% for field in form %}
+                        {% if field.errors %}
+                            <div class="errorlist">{{ field.errors }}</div>
+                        {% endif %}
+                        {{ field }}
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-primary my-2">Submit answer</button>
+            </form>
+            {% endif %}
         {% else %}
-            <h4><a href="">You must login to write an answer.</a></h4>
+            <h4><a href="{% url 'authors:login' %}">You must login to write an answer.</a></h4>
         {% endif %}
         <div class="question-inside-border">
                 {% if question.comment.all %}
                     {% for comment in question.comment.all %}
                         <div class="question-inside-border">
                             <div class="author-text-color">
-                                {{ comment.author }} &middot;
+                            {% if comment.author == None %}
+                                <div class="deleted-user">Deleted User</div> &middot;
+                            {% else %}
+                                {{ comment.author }} &middot; 
+                            {% endif %}
+                                
                                 <div class="text-muted author-text-color">
                                     {{ comment.pub_date|date:"d/M/Y - H:i" }}    
                                 </div>
@@ -52,6 +73,7 @@
                 {% endif %}
         </div>
     </div>
+    {% endif %}
 </div>
 {% endblock content %}
 
