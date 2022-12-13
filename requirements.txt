@@ -8,11 +8,14 @@ django-crispy-forms==1.14.0
 exceptiongroup==1.0.0
 iniconfig==1.1.1
 packaging==21.3
+parameterized==0.8.1
 pluggy==1.0.0
 pycodestyle==2.9.1
 pyparsing==3.0.9
 pytest==7.2.0
 pytest-django==4.5.2
+pytest-dotenv==0.5.2
+python-dotenv==0.21.0
 sqlparse==0.4.3
 tomli==2.0.1
 tzdata==2022.6
