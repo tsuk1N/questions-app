@@ -1,35 +1,43 @@
 {% extends 'questions/base.html' %}
 
-{% block title %}<title>Qan'A - Index</title>{% endblock title %}
+{% block title %}<title>Qan'A - Your questions</title>{% endblock title %}
 
 {% block content %}
-
-{% if request.user.is_authenticated %}
-<h4 class="py-3">{{ request.user }} &middot; Questions</h4>
-<div class="text-muted center-help-message my-3">
-    &middot; It's only possible to <b>edit</b> or <b>delete</b> your questions BEFORE it's published by the administration &middot;
-</div> 
 <div class="container">
-    {% if question_list %}
-        {% for question in question_list %}
-        <div class="my-2">
-            <div class="question-border"> 
-                <a href="{% url 'questions:detail' question.pk %}"><h2>{{ question.question_text }}</h2></a>
-                <p>{{ question.pub_date|date:"d/M/Y - H:i" }}</p>
-                <p>-- <a href="{% url 'questions:update' question.pk %}">Edit</a> | <a href="{% url 'questions:delete' question.pk %}">Delete</a> --</p>
+    {% if request.user.is_authenticated %}
+    <h4 class="py-3">{{ request.user }} &middot; Questions</h4>
+    <div class="text-muted center-help-message my-3">
+        &middot; Questions in this page are not published yet! &middot;
+    </div> 
+    <div class="text-muted center-help-message my-3">
+        &middot; It's only possible to <b>edit</b> or <b>delete</b> your questions BEFORE it's published by the administration &middot;
+    </div> 
+    <div class="container">
+        {% if question_list %}
+            {% for question in question_list %}
+            <div class="my-2">
+                <div class="question-border"> 
+                    <h2>{{ question.question_text }}</h2>
+                    <p>{{ question.pub_date|date:"d/M/Y - H:i" }}</p>
+                    <p>-- <a href="{% url 'questions:update' question.pk %}">Edit</a> | <a href="{% url 'questions:delete' question.pk %}">Delete</a> --</p>
+                </div>
             </div>
-        </div>
-        {% endfor %}
+            {% endfor %}
+            {% include "questions/pagination.html" %}
+        {% else %}
+            <div class="question-border">
+                <h4>No questions to show</h4>
+            </div>
+            {% endif %}
+    </div>
     {% else %}
-        <div class="question-border">
-            <h4>No questions to show</h4>
+        <div class="container">
+            <h4><a href="{% url 'authors:login' %}">You need to login first to see your questions.</a></h4>
+            <h4><a href="{% url 'authors:register' %}">Or register if you don't have an account.</a></h4>
         </div>
     {% endif %}
+
+
 </div>
-{% else %}
-    <div class="container">
-        <h4><a href="">You need to login first to see your questions.</a></h4>
-    </div>
-{% endif %}
 
 {% endblock content %}
