@@ -1,0 +1,31 @@
+{% extends 'questions/base.html' %}
+
+{% block title %}<title>Qan'A - Register</title>{% endblock title %}
+
+{% block content %}
+
+<div class="container">
+    {% if request.user.is_authenticated %}
+        <h4>You're already logged in!</h4>
+    {% else %}
+        <div class="py-1">
+            <div class="question-border">
+                <h4>Register</h4>
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <div class="user-form">
+                        {% for field in form %}
+                            <p>{{ field.label }}</p>
+                            <div class="errorlist">{{ field.errors }}</div>
+                            <center>{{ field.help_text }}</center>
+                            {{ field }}
+                        {% endfor %}    
+                    </div>
+                    <input type="submit" value="Register" class="btn btn-primary my-2">
+                </form>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock content %}
