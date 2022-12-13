@@ -5,6 +5,7 @@
 {% block content %}
 
 <div class="container">
+    {% if question.author == request.user %}
         <div class="py-1">
             <div class="question-border">
                 <h4>Delete your Question</h4>
@@ -20,6 +21,7 @@
                 </form>
             </div>
         </div>
+    {% endif %}
     </div>
 
 {% endblock content %}
