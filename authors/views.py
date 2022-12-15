@@ -53,5 +53,3 @@ class AuthorRegisterView(SuccessMessageMixin, CreateView):
 
     def get_success_url(self):
         return reverse_lazy("questions:list")
-
-# TODO separar os testes em arquivos diferentes e criar pasta tests para questions e authors
