@@ -16,7 +16,7 @@ class QuestionListView(ListView):
     model = Question
     context_object_name = "question_list"
     template_name = "questions/question_list.html"
-    paginate_by = 5
+    paginate_by = 10
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -99,7 +99,7 @@ class AuthorQuestionListView(ListView):
     model = Question
     context_object_name = "question_list"
     template_name = "questions/author_question_list.html"
-    paginate_by = 5
+    paginate_by = 10
 
     def get_queryset(self):
         qs = super().get_queryset()
