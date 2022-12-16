@@ -4,6 +4,15 @@
 
 {% block content %}
 <div class="container">
+    {% for message in messages %}
+        {% if message.tags %}
+            <div class="message-success">
+                {{ message }}
+            </div>
+        {% endif %}
+    {% endfor %}
+
+
     {% if request.user.is_authenticated %}
     <h4 class="py-3">{{ request.user }} &middot; Questions</h4>
     <div class="text-muted center-help-message my-3">
