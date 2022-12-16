@@ -5,5 +5,5 @@ It's an app made to make questions and receive answers from anyone, anywhere.
 Project is created with:
 * Python 3
 * Django 4
-## WebApp link:
+## Site:
 * https://tsukin.pythonanywhere.com/
