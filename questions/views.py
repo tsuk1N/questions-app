@@ -5,6 +5,7 @@ from django.views.generic.edit import FormMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib.auth.mixins import UserPassesTestMixin
 
 from .models import Question
 from . forms import CommentForm, QuestionForm
@@ -82,7 +83,7 @@ class QuestionUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy("questions:detail", kwargs={"pk": self.object.pk})
+        return reverse_lazy("questions:author-questions")
 
 
 class QuestionDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
@@ -92,7 +93,7 @@ class QuestionDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     success_message = "Your question was successfully deleted!"
 
     def get_success_url(self):
-        return reverse_lazy("questions:list")
+        return reverse_lazy("questions:author-questions")
 
 
 class AuthorQuestionListView(ListView):
