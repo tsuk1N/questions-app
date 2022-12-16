@@ -41,13 +41,11 @@ class QuestionCreateViewTests(TestCase):
         self.client.login(username="username", password="password")
         view = QuestionCreateView()
         url2 = reverse("questions:create")
-        view.get_success_url = url2
-        url1 = reverse("questions:author-questions")
         response = self.client.post(
-            view.get_success_url,
+            url2,
             data={"question_text": "what's is what is ?"})
 
-        self.assertRedirects(response, url1)
+        self.assertRedirects(response, view.get_success_url())
         self.assertEqual(response.status_code, 302)
 
     def test_question_create_form_invalid(self):
