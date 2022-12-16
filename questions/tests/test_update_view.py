@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth.models import User
 
 from .utils import create_question
 
@@ -12,7 +13,7 @@ from questions.views import (
 
 class QuestionUpdateViewTests(TestCase):
     def setUp(self):
-        self.q = create_question()
+        create_question()
         return super().setUp()
 
     def test_question_update_is_using_correct_template(self):
@@ -41,13 +42,11 @@ class QuestionUpdateViewTests(TestCase):
         self.client.login(username="username", password="password")
         view = QuestionUpdateView()
         url2 = reverse("questions:update", kwargs={"pk": 1})
-        view.get_success_url = url2
-        url1 = reverse("questions:detail", kwargs={"pk": 1})
         response = self.client.post(
-            view.get_success_url,
+            url2,
             data={"question_text": "what's is what is ?"})
 
-        self.assertRedirects(response, url1)
+        self.assertRedirects(response, view.get_success_url())
         self.assertEqual(response.status_code, 302)
 
     def test_question_update_form_invalid(self):
@@ -59,21 +58,29 @@ class QuestionUpdateViewTests(TestCase):
                       response.content.decode("utf-8"))
         self.assertContains(response, "This field is required.")
 
-    def test_question_is_updated_and_posted(self):
-        create_question(is_published=True, username="username1")
-        self.client.login(username="username", password="password")
-        url1 = reverse("questions:update", kwargs={"pk": 2})
-        url2 = reverse("questions:detail", kwargs={"pk": 2})
-        response = self.client.post(
-            url1, data={"question_text": "questiontext1234"}, follow=True)
-
-        self.assertRedirects(response, url2)
-        self.assertIn("questiontext1234", response.content.decode("utf-8"))
-        self.assertContains(response, "questiontext1234")
-
     def test_question_update_view_returns_404_if_no_question_is_found(self):
         self.client.login(username="username", password="password")
         url = reverse("questions:update", kwargs={"pk": 1000})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 404)
+
+    def test_message_if_try_to_access_a_published_question_if_logged_in(self):
+        create_question(is_published=True, username="username3")
+        User.objects.create_user(
+            username="not_question_author", password="passwords")
+        self.client.login(username="not_question_author", password="passwords")
+        url = reverse("questions:update", kwargs={"pk": 2})
+        response = self.client.get(url)
+
+        self.assertIn("Question not found", response.content.decode("utf-8"))
+        self.assertContains(response, "Question not found")
+
+    def test_message_if_try_to_access_a_published_question_as_author(self):
+        create_question(is_published=True, username="username3")
+        self.client.login(username="username3", password="password")
+        url = reverse("questions:update", kwargs={"pk": 2})
+        response = self.client.get(url)
+
+        self.assertIn("Question not found", response.content.decode("utf-8"))
+        self.assertContains(response, "Question not found")
