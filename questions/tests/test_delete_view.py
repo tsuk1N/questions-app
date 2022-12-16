@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth.models import User
 
 from .utils import create_question
 
@@ -8,7 +9,7 @@ from .utils import create_question
 
 class QuestionDeleteViewTests(TestCase):
     def setUp(self):
-        self.q = create_question()
+        create_question()
         return super().setUp()
 
     def test_question_delete_is_using_correct_template(self):
@@ -54,3 +55,23 @@ class QuestionDeleteViewTests(TestCase):
             reverse("questions:delete", kwargs={"pk": 1}))
         self.assertEqual(
             response.context["question"].question_text, "Question number 1")
+
+    def test_message_if_try_to_access_a_published_question_if_logged_in(self):
+        create_question(is_published=True, username="username3")
+        User.objects.create_user(
+            username="not_question_author", password="passwords")
+        self.client.login(username="not_question_author", password="passwords")
+        url = reverse("questions:delete", kwargs={"pk": 2})
+        response = self.client.get(url)
+
+        self.assertIn("Question not found", response.content.decode("utf-8"))
+        self.assertContains(response, "Question not found")
+
+    def test_message_if_try_to_access_a_published_question_as_author(self):
+        create_question(is_published=True, username="username3")
+        self.client.login(username="username3", password="password")
+        url = reverse("questions:delete", kwargs={"pk": 2})
+        response = self.client.get(url)
+
+        self.assertIn("Question not found", response.content.decode("utf-8"))
+        self.assertContains(response, "Question not found")
